@@ -9,18 +9,18 @@ LPpair address: [0x5Df696829C8E97a4CbAd7864f4bCAa0FDb89ECA9](https://goerli.ethe
 
 ## Installation
 Clone the repository and install the dependencies using the following command:
----
+```
 npm i
----
+```
 
 ## Deployment
 Fill in the .env file and use the command:
----
+```
 npx hardhat run scripts/deployContract.ts --network goerli
----
+```
 
 ## Task Running
 Running a task: 
----
+```
 npx hardhat addLiquidity --token1 <token1 address> --token2 <token1 address> --amount1 5 --amount2 5 --contract 0x11680743FBdc0e636D209c3196d1702204e1c06f --network goerli
----
+```
