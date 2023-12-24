@@ -86,10 +86,6 @@ const config: {} = {
       accounts: {
         mnemonic,
       },
-      forking: {
-        url: process.env.GOERLI_RPC_URL,
-        // blockNumber: 16708100
-      },
       chainId: chainIds.hardhat,
     },
     arbitrum: getChainConfig("arbitrum-mainnet"),
@@ -108,7 +104,7 @@ const config: {} = {
     tests: "./test",
   },
   solidity: {
-    version: "0.8.18",
+    version: "0.8.20",
     settings: {
       metadata: {
         // Not including the metadata hash
