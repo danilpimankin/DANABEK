@@ -28,31 +28,26 @@ describe("Marketplace contract", function () {
     //deploy a test payment token
     Marketplace = await ethers.getContractFactory('Marketplace');
     platform = await Marketplace.deploy()
+
+    paymentToken.safeMint(user1.address, "URI")
+    paymentToken.connect(user1).setApprovalForAll(platform.address, true)
   })
 
   describe("Functionality tests", async () => {
     it("test 1. Normal interaction with the platform through the list item via Ether", async () => {
-      await platform.grantRole(ARTIST_ROLE, user1.address)
-
-      await expect(platform.connect(user1).createItem("some URI"))
-        .to.emit(platform, "CreateItem")
-        .withArgs(user1.address, 0)
-
-      expect(await platform.ownerOf(0))
-        .to.be.eq(user1.address)
 
       let price = ethers.utils.parseEther("100")
 
-      await expect(platform.connect(user1).listItem(0, price, ZERO_ADDRESS))
+      await expect(platform.connect(user1).listItem(0, price, paymentToken.address))
         .to.emit(platform, "ListItem")
-        .withArgs(user1.address, 0, ZERO_ADDRESS, price)
+        .withArgs(user1.address, 0, paymentToken.address, price)
 
       let listStruct =  await platform._listings(0)
 
       expect(listStruct[0])
-        .to.be.eq(user1.address)
+        .to.be.eq(user2.address)
       expect(listStruct[1])
-        .to.be.eq(ZERO_ADDRESS)
+        .to.be.eq(paymentToken.address)
       expect(listStruct[2])
         .to.be.eq(price)
 
@@ -71,7 +66,6 @@ describe("Marketplace contract", function () {
     })
 
     it("test 2. Normal interaction with the platform through the auction via Ether", async () => { 
-      await platform.grantRole(ARTIST_ROLE, user1.address)
 
       await expect(platform.connect(user1).createItem("some URI"))
         .to.emit(platform, "CreateItem")
@@ -123,7 +117,6 @@ describe("Marketplace contract", function () {
     })
 
     it("test 3. Normal interaction with the platform through the list item via Tokens", async () => {
-      await platform.grantRole(ARTIST_ROLE, user1.address)
       await paymentToken.mint(user2.address, ethers.utils.parseEther("1000"))
 
       await expect(platform.connect(user1).createItem("some URI"))
@@ -144,7 +137,6 @@ describe("Marketplace contract", function () {
     })
 
     it("test 4. Normal interaction with the platform through the auction via Tokens", async () => {
-      await platform.grantRole(ARTIST_ROLE, user1.address)
       await paymentToken.mint(user2.address, ethers.utils.parseEther("1000"))
       await paymentToken.mint(users[4].address, ethers.utils.parseEther("1000"))
 
@@ -182,7 +174,6 @@ describe("Marketplace contract", function () {
     })
 
     it("test 5. Normal interaction with the platform with list canceling", async () => {
-      await platform.grantRole(ARTIST_ROLE, user1.address)
 
       await expect(platform.connect(user1).createItem("some URI"))
         .to.emit(platform, "CreateItem")
@@ -202,7 +193,6 @@ describe("Marketplace contract", function () {
     })
 
     it("test 6. Normal interaction with the platform through the auction via Ether", async () => { 
-      await platform.grantRole(ARTIST_ROLE, user1.address)
 
       await expect(platform.connect(user1).createItem("some URI"))
         .to.emit(platform, "CreateItem")
@@ -224,7 +214,6 @@ describe("Marketplace contract", function () {
     })
 
     it("test 7. Normal interaction with the platform with auction canceling via Tokens", async () => {
-      await platform.grantRole(ARTIST_ROLE, user1.address)
       await paymentToken.mint(user2.address, ethers.utils.parseEther("1000"))
       await paymentToken.mint(users[4].address, ethers.utils.parseEther("1000"))
 
@@ -256,7 +245,6 @@ describe("Marketplace contract", function () {
 
   describe("Balances tests", async () => {
     it("test 1. Check ether balances via listItem", async () => {
-      await platform.grantRole(ARTIST_ROLE, user1.address)
 
       await platform.connect(user1).createItem("some URI")
 
@@ -270,7 +258,6 @@ describe("Marketplace contract", function () {
     })
 
     it("test 2. Check ether balances via listOnAuction", async () => { 
-      await platform.grantRole(ARTIST_ROLE, user1.address)
 
       await platform.connect(user1).createItem("some URI")
 
@@ -295,7 +282,6 @@ describe("Marketplace contract", function () {
     })
     
     it("test 3. Check token balances via listItem", async () => {
-      await platform.grantRole(ARTIST_ROLE, user1.address)
       await paymentToken.mint(user2.address, ethers.utils.parseEther("1000"))
 
       await platform.connect(user1).createItem("some URI")
@@ -321,7 +307,6 @@ describe("Marketplace contract", function () {
     })
 
     it("test 4. Check token balances via listOnAuction", async () => {
-      await platform.grantRole(ARTIST_ROLE, user1.address)
       await paymentToken.mint(user2.address, ethers.utils.parseEther("1000"))
       await paymentToken.mint(users[2].address, ethers.utils.parseEther("1000"))
       await paymentToken.connect(user2).approve(platform.address, ethers.utils.parseEther("1000"))
@@ -369,7 +354,6 @@ describe("Marketplace contract", function () {
 
   describe("Other tests", async () => {
     it("test 1. Refund test", async () => {
-      await platform.grantRole(ARTIST_ROLE, user1.address)
 
       await platform.connect(user1).createItem("some URI")
 
@@ -383,7 +367,6 @@ describe("Marketplace contract", function () {
     })
 
     it("test 2. Not enough bidders with Ether", async () => { 
-      await platform.grantRole(ARTIST_ROLE, user1.address)
 
       await platform.connect(user1).createItem("some URI")
 
@@ -405,7 +388,6 @@ describe("Marketplace contract", function () {
     })
 
     it("test 3. Not enough bidders with Tokens", async () => {
-      await platform.grantRole(ARTIST_ROLE, user1.address)
       await paymentToken.mint(user2.address, ethers.utils.parseEther("1000"))
       await paymentToken.mint(users[2].address, ethers.utils.parseEther("1000"))
       await paymentToken.connect(user2).approve(platform.address, ethers.utils.parseEther("1000"))
@@ -440,7 +422,6 @@ describe("Marketplace contract", function () {
     })
 
     it("test 4. Check a current price", async () => { 
-      await platform.grantRole(ARTIST_ROLE, user1.address)
 
       await platform.connect(user1).createItem("some URI")
 
@@ -466,7 +447,6 @@ describe("Marketplace contract", function () {
       await expect(platform.cancelAuction(0))
         .to.be.revertedWith("MARKETPLACE: You are not the owner of this auction")
     
-      await platform.grantRole(ARTIST_ROLE, user1.address)
 
       await expect(platform.connect(user1).createItem("some URI"))
         .to.emit(platform, "CreateItem")
@@ -487,7 +467,6 @@ describe("Marketplace contract", function () {
 
     it("test 6. Cancel requirement tests 2.0", async () => { 
     
-      await platform.grantRole(ARTIST_ROLE, user1.address)
 
       await platform.connect(user1).createItem("some URI")
 
@@ -502,7 +481,6 @@ describe("Marketplace contract", function () {
 
     it("test 7. Cancel requirement tests 3.0", async () => { 
     
-      await platform.grantRole(ARTIST_ROLE, user1.address)
 
       await platform.connect(user1).createItem("some URI")
 
@@ -518,7 +496,6 @@ describe("Marketplace contract", function () {
       await expect(platform.finishAuction(0))
         .to.be.revertedWith("MARKETPLACE: Auction is not active")
     
-      await platform.grantRole(ARTIST_ROLE, user1.address)
 
       await expect(platform.connect(user1).createItem("some URI"))
         .to.emit(platform, "CreateItem")
@@ -547,8 +524,6 @@ describe("Marketplace contract", function () {
         .to.be.revertedWith("MARKETPLACE: Item is not selling")
     
 
-      await platform.grantRole(ARTIST_ROLE, user1.address)
-
       await platform.connect(user1).createItem("some URI")
       await platform.connect(user1).listItemOnAuction(0, STARTING_PRICE, MINIMAL_STEP, ZERO_ADDRESS)
       await expect(platform.connect(user2).makeBid(0, NEXT_BID, {value: NEXT_BID.sub(10)}))
@@ -559,7 +534,6 @@ describe("Marketplace contract", function () {
     })
 
     it("test 10. butItem requirement tests", async () => {
-      await platform.grantRole(ARTIST_ROLE, user1.address)
 
       await platform.connect(user1).createItem("some URI")
 

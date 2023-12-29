@@ -26,6 +26,7 @@ interface MarketplaceInterface extends ethers.utils.Interface {
     "buyItem(uint256)": FunctionFragment;
     "cancelListing(uint256)": FunctionFragment;
     "listItem(uint256,uint256,address)": FunctionFragment;
+    "onERC721Received(address,address,uint256,bytes)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -44,6 +45,10 @@ interface MarketplaceInterface extends ethers.utils.Interface {
     functionFragment: "listItem",
     values: [BigNumberish, BigNumberish, string]
   ): string;
+  encodeFunctionData(
+    functionFragment: "onERC721Received",
+    values: [string, string, BigNumberish, BytesLike]
+  ): string;
 
   decodeFunctionResult(functionFragment: "_listings", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "buyItem", data: BytesLike): Result;
@@ -52,6 +57,10 @@ interface MarketplaceInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "listItem", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "onERC721Received",
+    data: BytesLike
+  ): Result;
 
   events: {
     "BuyItem(address,uint256,uint256)": EventFragment;
@@ -156,6 +165,14 @@ export class Marketplace extends BaseContract {
       _tokenAddress: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    onERC721Received(
+      arg0: string,
+      arg1: string,
+      arg2: BigNumberish,
+      arg3: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
   };
 
   _listings(
@@ -186,6 +203,14 @@ export class Marketplace extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  onERC721Received(
+    arg0: string,
+    arg1: string,
+    arg2: BigNumberish,
+    arg3: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   callStatic: {
     _listings(
       arg0: BigNumberish,
@@ -211,6 +236,14 @@ export class Marketplace extends BaseContract {
       _tokenAddress: string,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    onERC721Received(
+      arg0: string,
+      arg1: string,
+      arg2: BigNumberish,
+      arg3: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<string>;
   };
 
   filters: {
@@ -301,6 +334,14 @@ export class Marketplace extends BaseContract {
       _tokenAddress: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    onERC721Received(
+      arg0: string,
+      arg1: string,
+      arg2: BigNumberish,
+      arg3: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -324,6 +365,14 @@ export class Marketplace extends BaseContract {
       _price: BigNumberish,
       _tokenAddress: string,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    onERC721Received(
+      arg0: string,
+      arg1: string,
+      arg2: BigNumberish,
+      arg3: BytesLike,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

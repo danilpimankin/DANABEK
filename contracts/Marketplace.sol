@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
-
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 /**
 * @title NFT marketplace SC 
 * @author Danil Pimankin
@@ -150,4 +150,9 @@ contract Marketplace{
         delete _listings[_tokenId];
     }
 
+     function onERC721Received(address, address, uint256, bytes calldata) external pure returns (bytes4) {
+        return IERC721Receiver.onERC721Received.selector;
+    }
+
 }
+

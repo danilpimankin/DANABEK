@@ -19,24 +19,17 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
-interface MyTokenInterface extends ethers.utils.Interface {
+interface IERC4906Interface extends ethers.utils.Interface {
   functions: {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
-    "name()": FunctionFragment;
-    "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
-    "renounceOwnership()": FunctionFragment;
-    "safeMint(address,string)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
-    "symbol()": FunctionFragment;
-    "tokenURI(uint256)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
-    "transferOwnership(address)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -52,19 +45,9 @@ interface MyTokenInterface extends ethers.utils.Interface {
     functionFragment: "isApprovedForAll",
     values: [string, string]
   ): string;
-  encodeFunctionData(functionFragment: "name", values?: undefined): string;
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "ownerOf",
     values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "renounceOwnership",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "safeMint",
-    values: [string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "safeTransferFrom",
@@ -78,18 +61,9 @@ interface MyTokenInterface extends ethers.utils.Interface {
     functionFragment: "supportsInterface",
     values: [BytesLike]
   ): string;
-  encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "tokenURI",
-    values: [BigNumberish]
-  ): string;
   encodeFunctionData(
     functionFragment: "transferFrom",
     values: [string, string, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "transferOwnership",
-    values: [string]
   ): string;
 
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
@@ -102,14 +76,7 @@ interface MyTokenInterface extends ethers.utils.Interface {
     functionFragment: "isApprovedForAll",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "renounceOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "safeMint", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "safeTransferFrom",
     data: BytesLike
@@ -122,14 +89,8 @@ interface MyTokenInterface extends ethers.utils.Interface {
     functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferFrom",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
 
@@ -138,7 +99,6 @@ interface MyTokenInterface extends ethers.utils.Interface {
     "ApprovalForAll(address,address,bool)": EventFragment;
     "BatchMetadataUpdate(uint256,uint256)": EventFragment;
     "MetadataUpdate(uint256)": EventFragment;
-    "OwnershipTransferred(address,address)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
@@ -146,7 +106,6 @@ interface MyTokenInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BatchMetadataUpdate"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "MetadataUpdate"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
 
@@ -174,15 +133,11 @@ export type MetadataUpdateEvent = TypedEvent<
   [BigNumber] & { _tokenId: BigNumber }
 >;
 
-export type OwnershipTransferredEvent = TypedEvent<
-  [string, string] & { previousOwner: string; newOwner: string }
->;
-
 export type TransferEvent = TypedEvent<
   [string, string, BigNumber] & { from: string; to: string; tokenId: BigNumber }
 >;
 
-export class MyToken extends BaseContract {
+export class IERC4906 extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -223,7 +178,7 @@ export class MyToken extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: MyTokenInterface;
+  interface: IERC4906Interface;
 
   functions: {
     approve(
@@ -232,12 +187,15 @@ export class MyToken extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
+    balanceOf(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { balance: BigNumber }>;
 
     getApproved(
       tokenId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[string]>;
+    ): Promise<[string] & { operator: string }>;
 
     isApprovedForAll(
       owner: string,
@@ -245,24 +203,10 @@ export class MyToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    name(overrides?: CallOverrides): Promise<[string]>;
-
-    owner(overrides?: CallOverrides): Promise<[string]>;
-
     ownerOf(
       tokenId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    renounceOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    safeMint(
-      to: string,
-      uri: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<[string] & { owner: string }>;
 
     "safeTransferFrom(address,address,uint256)"(
       from: string,
@@ -290,22 +234,10 @@ export class MyToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    symbol(overrides?: CallOverrides): Promise<[string]>;
-
-    tokenURI(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
     transferFrom(
       from: string,
       to: string,
       tokenId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    transferOwnership(
-      newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
@@ -329,21 +261,7 @@ export class MyToken extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  name(overrides?: CallOverrides): Promise<string>;
-
-  owner(overrides?: CallOverrides): Promise<string>;
-
   ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-  renounceOwnership(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  safeMint(
-    to: string,
-    uri: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
 
   "safeTransferFrom(address,address,uint256)"(
     from: string,
@@ -371,19 +289,10 @@ export class MyToken extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  symbol(overrides?: CallOverrides): Promise<string>;
-
-  tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
   transferFrom(
     from: string,
     to: string,
     tokenId: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  transferOwnership(
-    newOwner: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -407,15 +316,7 @@ export class MyToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    name(overrides?: CallOverrides): Promise<string>;
-
-    owner(overrides?: CallOverrides): Promise<string>;
-
     ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-    renounceOwnership(overrides?: CallOverrides): Promise<void>;
-
-    safeMint(to: string, uri: string, overrides?: CallOverrides): Promise<void>;
 
     "safeTransferFrom(address,address,uint256)"(
       from: string,
@@ -443,19 +344,10 @@ export class MyToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    symbol(overrides?: CallOverrides): Promise<string>;
-
-    tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
     transferFrom(
       from: string,
       to: string,
       tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    transferOwnership(
-      newOwner: string,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -521,22 +413,6 @@ export class MyToken extends BaseContract {
       _tokenId?: null
     ): TypedEventFilter<[BigNumber], { _tokenId: BigNumber }>;
 
-    "OwnershipTransferred(address,address)"(
-      previousOwner?: string | null,
-      newOwner?: string | null
-    ): TypedEventFilter<
-      [string, string],
-      { previousOwner: string; newOwner: string }
-    >;
-
-    OwnershipTransferred(
-      previousOwner?: string | null,
-      newOwner?: string | null
-    ): TypedEventFilter<
-      [string, string],
-      { previousOwner: string; newOwner: string }
-    >;
-
     "Transfer(address,address,uint256)"(
       from?: string | null,
       to?: string | null,
@@ -576,23 +452,9 @@ export class MyToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    name(overrides?: CallOverrides): Promise<BigNumber>;
-
-    owner(overrides?: CallOverrides): Promise<BigNumber>;
-
     ownerOf(
       tokenId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    renounceOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    safeMint(
-      to: string,
-      uri: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     "safeTransferFrom(address,address,uint256)"(
@@ -621,22 +483,10 @@ export class MyToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    symbol(overrides?: CallOverrides): Promise<BigNumber>;
-
-    tokenURI(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     transferFrom(
       from: string,
       to: string,
       tokenId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    transferOwnership(
-      newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -664,23 +514,9 @@ export class MyToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     ownerOf(
       tokenId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    renounceOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    safeMint(
-      to: string,
-      uri: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     "safeTransferFrom(address,address,uint256)"(
@@ -709,22 +545,10 @@ export class MyToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    tokenURI(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     transferFrom(
       from: string,
       to: string,
       tokenId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    transferOwnership(
-      newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

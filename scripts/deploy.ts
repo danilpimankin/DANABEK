@@ -9,28 +9,24 @@ const delay = async (time: number) => {
 }
 
 async function main() {
-  const uniswapRouter = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
-  const uniswapFactory = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
 
+  const MyToken = await ethers.getContractFactory("Marketplace");
+  const myToken = await MyToken.deploy();
 
-
-  const AddLiquidity = await ethers.getContractFactory("AddLiquidity");
-  const addLiquidity = await AddLiquidity.deploy(uniswapRouter, uniswapFactory);
-
-  await addLiquidity.deployed();
+  await myToken.deployed();
 
   console.log(
-    `AddLiquidity contract deployed to ${addLiquidity.address}`
+    `MyToken contract deployed to ${myToken.address}`
   );
 
   console.log('wait of delay...')
 	await delay(15000) // delay 15 secons
-	console.log('starting verify contract...')
+	console.log('starting verify token...')
 	try {
 		await run('verify:verify', {
-			address: addLiquidity!.address,
-			contract: 'contracts/AddLiquidity.sol:AddLiquidity',
-			constructorArguments: [ uniswapRouter, uniswapFactory ],
+			address: myToken!.address,
+			contract: 'contracts/Marketplace.sol:Marketplace',
+			constructorArguments: [],
 		});
 		console.log('verify success')
 	} catch (e: any) {
